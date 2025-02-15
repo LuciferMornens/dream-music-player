@@ -1,0 +1,22 @@
+{
+  "tracks": [
+    {
+      "id": "track3",
+      "title": "I don t want a lot for christmas",
+      "artist": "Dream Artist",
+      "url": "/audio/i-don-t-want-a-lot-for-christmas.mp3",
+      "coverArt": "/images/dw.png",
+      "genre": "Uncategorized",
+      "duration": "4:00"
+    },
+    {
+      "id": "track2",
+      "title": "Carry on my son",
+      "artist": "Dream Artist",
+      "url": "/audio/carry-on-my-son.mp3",
+      "coverArt": "/images/dw.png",
+      "genre": "Uncategorized",
+      "duration": "4:00"
+    }
+  ]
+}
