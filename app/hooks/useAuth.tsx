@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useContext, createContext } from 'react';
+import React, { useState, useEffect, useCallback, useContext, createContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
@@ -9,15 +9,15 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, username?: string, fullName?: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, username?: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
+  updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -27,11 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Load user profile
   const loadProfile = useCallback(async (userId: string) => {
     try {
+      // Add timeout for profile loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
+
+      clearTimeout(timeoutId);
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading profile:', error);
@@ -40,7 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setProfile(data);
     } catch (error) {
-      console.error('Error loading profile:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.warn('Profile loading timed out');
+      } else {
+        console.error('Error loading profile:', error);
+      }
     }
   }, []);
 
@@ -72,19 +82,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Initialize auth state
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     async function getInitialSession() {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
+      try {
+        // Set a timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          if (mounted) {
+            console.warn('Auth initialization timeout');
+            setLoading(false);
+          }
+        }, 10000); // 10 second timeout
+
+        const { data: { session } } = await supabase.auth.getSession();
         
-        if (session?.user) {
-          await loadProfile(session.user.id);
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            await loadProfile(session.user.id);
+          }
+          
+          if (timeoutId) clearTimeout(timeoutId);
+          setLoading(false);
         }
-        
-        setLoading(false);
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          if (timeoutId) clearTimeout(timeoutId);
+          setLoading(false);
+        }
       }
     }
 
@@ -110,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, [loadProfile]);
@@ -124,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { error };
     } catch (error) {
-      return { error };
+      return { error: error as Error };
     }
   }, []);
 
@@ -150,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: error as Error };
     }
   }, [createProfile]);
 
@@ -169,7 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Update profile
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
-    if (!user) return { error: 'Not authenticated' };
+    if (!user) return { error: new Error('Not authenticated') };
 
     try {
       const { data, error } = await supabase
@@ -187,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(data);
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: error as Error };
     }
   }, [user]);
 

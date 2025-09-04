@@ -6,96 +6,85 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
   public: {
     Tables: {
       profiles: {
         Row: {
-          id: string
-          username: string | null
-          full_name: string | null
           avatar_url: string | null
-          created_at: string
-          updated_at: string
+          created_at: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
         }
         Insert: {
-          id: string
-          username?: string | null
-          full_name?: string | null
           avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
         }
         Update: {
-          id?: string
-          username?: string | null
-          full_name?: string | null
           avatar_url?: string | null
-          created_at?: string
-          updated_at?: string
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
       tracks: {
         Row: {
-          id: string
-          user_id: string
-          title: string
           artist: string
+          cover_art: string | null
           duration: number
-          file_url: string
           file_path: string
           file_size: number
-          upload_date: string
-          metadata: Json | null
+          file_url: string
           genre: string | null
-          cover_art: string | null
+          id: string
+          metadata: Json | null
+          title: string
+          upload_date: string | null
+          user_id: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          title: string
           artist: string
+          cover_art?: string | null
           duration: number
-          file_url: string
           file_path: string
           file_size: number
-          upload_date?: string
-          metadata?: Json | null
+          file_url: string
           genre?: string | null
-          cover_art?: string | null
+          id?: string
+          metadata?: Json | null
+          title: string
+          upload_date?: string | null
+          user_id?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          title?: string
           artist?: string
+          cover_art?: string | null
           duration?: number
-          file_url?: string
           file_path?: string
           file_size?: number
-          upload_date?: string
-          metadata?: Json | null
+          file_url?: string
           genre?: string | null
-          cover_art?: string | null
+          id?: string
+          metadata?: Json | null
+          title?: string
+          upload_date?: string | null
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "tracks_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
       }
     }
     Views: {

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from './useAuth';
 import { Track, formatSupabaseTrack } from '../types/track';
+import type { Database } from '@/types/database';
 
 interface UseTracksOptions {
   onTrackDeleted?: (track: Track) => void;
@@ -68,12 +69,12 @@ export function useTracks({ onTrackDeleted }: UseTracksOptions = {}) {
           console.log('Track change detected:', payload);
           
           if (payload.eventType === 'INSERT') {
-            const newTrack = formatSupabaseTrack(payload.new);
+            const newTrack = formatSupabaseTrack(payload.new as Database['public']['Tables']['tracks']['Row']);
             setTracks(prevTracks => [newTrack, ...prevTracks]);
           } else if (payload.eventType === 'DELETE') {
             setTracks(prevTracks => prevTracks.filter(t => t.id !== payload.old.id));
           } else if (payload.eventType === 'UPDATE') {
-            const updatedTrack = formatSupabaseTrack(payload.new);
+            const updatedTrack = formatSupabaseTrack(payload.new as Database['public']['Tables']['tracks']['Row']);
             setTracks(prevTracks =>
               prevTracks.map(t => (t.id === updatedTrack.id ? updatedTrack : t))
             );

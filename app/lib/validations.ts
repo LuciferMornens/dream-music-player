@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const trackSchema = z.object({
   id: z.string()
     .min(1, "Track ID is required")
-    .regex(/^track\d+$/, "Invalid track ID format"),
+    .uuid("Invalid track ID format"),
   title: z.string()
     .min(1, "Title is required")
     .max(100, "Title must be less than 100 characters"),
@@ -12,11 +12,10 @@ export const trackSchema = z.object({
     .min(1, "Artist is required")
     .max(100, "Artist must be less than 100 characters"),
   url: z.string()
-    .startsWith("/audio/", "URL must start with /audio/")
-    .max(255, "URL must be less than 255 characters"),
+    .url("Invalid URL format")
+    .max(500, "URL must be less than 500 characters"),
   coverArt: z.string()
-    .startsWith("/images/", "Cover art must start with /images/")
-    .max(255, "Cover art URL must be less than 255 characters")
+    .max(500, "Cover art URL must be less than 500 characters")
     .optional(),
   genre: z.string()
     .min(1, "Genre is required")
@@ -54,7 +53,7 @@ export const uploadRequestSchema = z.object({
 export const deleteRequestSchema = z.object({
   trackId: z.string()
     .min(1, "Track ID is required")
-    .regex(/^track\d+$/, "Invalid track ID format")
+    .uuid("Invalid track ID format")
 });
 
 // Custom error formatter

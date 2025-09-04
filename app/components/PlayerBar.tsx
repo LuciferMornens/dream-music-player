@@ -80,7 +80,7 @@ export default function PlayerBar() {
   const volumePercentage = Math.round(volume * 100);
 
   return (
-    <div className="h-full w-full relative" role="region" aria-label="Audio player">
+    <div className="h-full w-full relative player-beat-responsive" role="region" aria-label="Audio player">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-900/20 via-accent-900/20 to-primary-900/20 animate-pulse opacity-30" />
       </div>
@@ -96,14 +96,16 @@ export default function PlayerBar() {
                 width={48}
                 height={48}
                 className={`w-10 h-10 md:w-12 md:h-12 object-cover rounded-lg shadow-lg transition-all duration-300
-                  ${isPlaying ? 'animate-pulse-subtle shadow-neon' : 'hover:shadow-neon'}
+                  ${isPlaying ? 'animate-pulse-subtle shadow-ocean-glow bass-reactive beat-responsive' : 'hover:shadow-ocean-glow'}
                 `}
               />
-              <div className="absolute inset-0 bg-gradient-neon opacity-0 group-hover:opacity-20 rounded-lg transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-ocean opacity-0 group-hover:opacity-20 rounded-lg transition-opacity duration-300" />
             </div>
 
             <div className="flex flex-col min-w-0">
-              <span className="font-semibold text-xs md:text-sm text-surface-50 hover:text-primary-400 transition-colors duration-300 truncate max-w-[120px] md:max-w-none">
+              <span className={`font-semibold text-xs md:text-sm text-surface-50 hover:text-primary-400 transition-colors duration-300 truncate max-w-[120px] md:max-w-none ${
+                isPlaying ? 'text-beat-glow' : ''
+              }`}>
                 {currentTrack.title}
               </span>
               <span className="text-surface-400 text-[10px] md:text-xs hover:text-primary-400 transition-colors duration-300 truncate max-w-[120px] md:max-w-none">
@@ -124,10 +126,10 @@ export default function PlayerBar() {
                 className={`
                   relative w-8 h-8 md:w-12 md:h-12 rounded-full overflow-hidden
                   transition-all duration-300 transform hover:scale-105
-                  ${isLoading ? 'cursor-wait' : 'hover:shadow-neon'}
+                  ${isLoading ? 'cursor-wait' : 'hover:shadow-ocean-glow beat-responsive'}
                 `}
               >
-                <div className="absolute inset-0 bg-gradient-neon opacity-90" />
+                <div className="absolute inset-0 bg-gradient-ocean opacity-90 beat-glow" />
                 <div className="relative z-10 w-full h-full flex items-center justify-center text-white">
                   {isLoading ? (
                     <svg className="w-4 h-4 md:w-6 md:h-6 animate-spin" viewBox="0 0 24 24" role="progressbar" aria-label="Loading audio">
@@ -154,21 +156,21 @@ export default function PlayerBar() {
               <div className="relative flex-1 h-1.5 md:h-2 group">
                 <div className="absolute inset-0 rounded-full bg-surface-800 overflow-hidden">
                   {isLoading ? (
-                    <div className="absolute inset-0 bg-gradient-neon animate-loading-progress opacity-50" role="progressbar" aria-label="Loading progress" />
+                    <div className="absolute inset-0 bg-gradient-ocean animate-loading-progress opacity-50" role="progressbar" aria-label="Loading progress" />
                   ) : (
                     <>
                       <div 
-                        className="absolute left-0 top-0 h-full bg-gradient-neon transition-all duration-150"
+                        className="absolute left-0 top-0 h-full bg-gradient-ocean transition-all duration-150 energy-flow beat-glow"
                         style={{ width: `${progress}%` }}
                         role="presentation"
                       />
                       <div 
-                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-surface-950 rounded-full shadow-neon
-                          transform scale-0 group-hover:scale-100 transition-transform duration-150"
+                        className="absolute top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-surface-950 rounded-full shadow-ocean-glow
+                          transform scale-0 group-hover:scale-100 transition-transform duration-150 beat-responsive"
                         style={{ left: `calc(${progress}% - 6px)` }}
                         role="presentation"
                       >
-                        <div className="absolute inset-1 bg-gradient-neon rounded-full" />
+                        <div className="absolute inset-1 bg-gradient-ocean rounded-full beat-glow" />
                       </div>
                     </>
                   )}
@@ -244,13 +246,13 @@ export default function PlayerBar() {
                   onKeyDown={handleVolumeKeyDown}
                   className="w-full h-1.5 rounded-full bg-surface-800 appearance-none cursor-pointer
                     [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-neon
-                    [&::-webkit-slider-thumb]:shadow-neon [&::-webkit-slider-thumb]:cursor-pointer
+                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-ocean
+                    [&::-webkit-slider-thumb]:shadow-ocean-glow [&::-webkit-slider-thumb]:cursor-pointer
                     [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3
-                    [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gradient-neon
-                    [&::-moz-range-thumb]:shadow-neon [&::-moz-range-thumb]:cursor-pointer
+                    [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-gradient-ocean
+                    [&::-moz-range-thumb]:shadow-ocean-glow [&::-moz-range-thumb]:cursor-pointer
                     [&::-moz-range-track]:bg-surface-800 [&::-moz-range-track]:rounded-full
-                    hover:shadow-neon transition-shadow duration-300"
+                    hover:shadow-ocean-glow transition-shadow duration-300 treble-sparkle"
                   aria-label="Volume"
                   aria-valuemin={0}
                   aria-valuemax={1}

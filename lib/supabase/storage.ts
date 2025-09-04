@@ -1,4 +1,4 @@
-import { supabase } from './client'
+import { createServerClient } from './server'
 
 export const AUDIO_BUCKET = 'audio-files'
 
@@ -9,6 +9,9 @@ export async function uploadAudioFile(
   filename: string
 ): Promise<{ url: string; path: string } | null> {
   try {
+    // Create server-side client with authentication context
+    const supabase = await createServerClient()
+    
     const filePath = `${userId}/${filename}`
     
     const { data, error } = await supabase.storage
@@ -19,7 +22,12 @@ export async function uploadAudioFile(
       })
 
     if (error) {
-      console.error('Upload error:', error)
+      console.error('Supabase storage upload error:', {
+        error: error.message,
+        details: error,
+        filePath,
+        bucket: AUDIO_BUCKET
+      })
       return null
     }
 
@@ -33,7 +41,13 @@ export async function uploadAudioFile(
       path: data.path
     }
   } catch (error) {
-    console.error('Error uploading file:', error)
+    console.error('Error uploading file - caught exception:', {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
+      userId,
+      filename,
+      bucket: AUDIO_BUCKET
+    })
     return null
   }
 }
@@ -41,6 +55,9 @@ export async function uploadAudioFile(
 // Delete audio file from Supabase Storage
 export async function deleteAudioFile(filePath: string): Promise<boolean> {
   try {
+    // Create server-side client with authentication context
+    const supabase = await createServerClient()
+    
     const { error } = await supabase.storage
       .from(AUDIO_BUCKET)
       .remove([filePath])
@@ -60,6 +77,9 @@ export async function deleteAudioFile(filePath: string): Promise<boolean> {
 // Get signed URL for audio file (for private access)
 export async function getSignedUrl(filePath: string, expiresIn = 3600): Promise<string | null> {
   try {
+    // Create server-side client with authentication context
+    const supabase = await createServerClient()
+    
     const { data, error } = await supabase.storage
       .from(AUDIO_BUCKET)
       .createSignedUrl(filePath, expiresIn)
@@ -79,6 +99,9 @@ export async function getSignedUrl(filePath: string, expiresIn = 3600): Promise<
 // Get file info
 export async function getFileInfo(filePath: string) {
   try {
+    // Create server-side client with authentication context
+    const supabase = await createServerClient()
+    
     const { data, error } = await supabase.storage
       .from(AUDIO_BUCKET)
       .list(filePath.split('/').slice(0, -1).join('/'), {

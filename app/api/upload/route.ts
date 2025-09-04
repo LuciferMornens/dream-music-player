@@ -1,10 +1,9 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
 import { uploadAudioFile } from '@/lib/supabase/storage';
-import { formatTrackForSupabase } from '@/types/track';
 import { uploadRequestSchema, formatZodError } from '../../lib/validations';
+import { createServerClient } from '@/lib/supabase/server';
+import path from 'path';
 
 // Allowed file extensions
 const ALLOWED_EXTENSIONS = ['.mp3', '.wav', '.ogg', '.m4a'];
@@ -60,14 +59,9 @@ function parseDurationToSeconds(duration: string): number {
   }
 }
 
-import path from 'path';
-
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient<Database>({ 
-      cookies: () => cookieStore 
-    });
+    const supabase = await createServerClient();
 
     // Get the authenticated user
     const {
@@ -124,8 +118,16 @@ export async function POST(request: NextRequest) {
     const uniqueFilename = `${baseFilename}-${timestamp}${ext}`;
 
     // Upload file to Supabase Storage
+    console.log('Attempting to upload file:', {
+      filename: uniqueFilename,
+      userId: user.id,
+      fileSize: file.size,
+      fileType: file.type
+    });
+    
     const uploadResult = await uploadAudioFile(file, user.id, uniqueFilename);
     if (!uploadResult) {
+      console.error('Upload failed - uploadResult is null');
       return NextResponse.json(
         { error: 'Failed to upload file to storage' },
         { status: 500 }
@@ -139,7 +141,8 @@ export async function POST(request: NextRequest) {
     const durationSeconds = parseDurationToSeconds(duration);
 
     // Prepare track data for Supabase
-    const trackData = {
+    type TrackInsert = Database['public']['Tables']['tracks']['Insert'];
+    const trackData: TrackInsert = {
       user_id: user.id,
       title,
       artist: 'Dream Artist',
@@ -204,7 +207,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Format all tracks for frontend
-    const formattedTracks = allTracks.map(track => ({
+    const formattedTracks = allTracks?.map(track => ({
       id: track.id,
       title: track.title,
       artist: track.artist,
@@ -217,7 +220,7 @@ export async function POST(request: NextRequest) {
       file_size: track.file_size,
       upload_date: track.upload_date,
       metadata: track.metadata
-    }));
+    })) || [];
 
     // Return success response with track data and full tracks list
     return NextResponse.json({

@@ -1,15 +1,10 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import type { Database } from '@/types/database';
 import { formatSupabaseTrack } from '@/types/track';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
-    const supabase = createRouteHandlerClient<Database>({ 
-      cookies: () => cookieStore 
-    });
+    const supabase = await createServerClient();
 
     // Get the authenticated user
     const {

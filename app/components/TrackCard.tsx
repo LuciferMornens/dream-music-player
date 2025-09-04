@@ -49,12 +49,12 @@ export default function TrackCard({ id, title, artist, coverArt = '/images/dw.pn
   return (
     <div 
       className={`
-        glass relative overflow-hidden group
+        glass-elegant relative overflow-hidden group ocean-border track-card-beat
         ${isCurrentTrack 
-          ? 'ring-2 ring-primary-500 ring-offset-4 ring-offset-surface-950' 
+          ? 'ring-2 ring-primary-500 ring-offset-4 ring-offset-surface-950 bass-thump sound-ripple beat-glow' 
           : 'hover:ring-1 hover:ring-primary-500/50 hover:ring-offset-2 hover:ring-offset-surface-950'
         }
-        rounded-xl transition-all duration-300 hover:transform hover:-translate-y-1
+        rounded-xl elegant-card
       `}
       role="article"
       aria-label={`Track: ${title} by ${artist}`}
@@ -69,7 +69,7 @@ export default function TrackCard({ id, title, artist, coverArt = '/images/dw.pn
             height={64}
             className={`
               w-14 h-14 md:w-16 md:h-16 object-cover rounded-lg shadow-lg transition-all duration-500
-              ${isCurrentTrack && isPlaying ? 'shadow-neon animate-pulse-subtle' : 'group-hover:shadow-neon'}
+              ${isCurrentTrack && isPlaying ? 'shadow-ocean-glow beat-bounce bass-reactive' : 'group-hover:shadow-ocean-glow'}
             `}
           />
           
@@ -86,21 +86,33 @@ export default function TrackCard({ id, title, artist, coverArt = '/images/dw.pn
             `}
             aria-hidden="true"
           >
-            <span className={`
-              text-white transform transition-all duration-300
-              ${isCurrentTrack && isPlaying
-                ? 'scale-100 opacity-100'
-                : 'scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100'
-              }
-            `}>
-              {isCurrentTrack && isPlaying ? '▶️' : '▶'}
-            </span>
+{isCurrentTrack && isPlaying ? (
+              <div className="freq-bars-dynamic">
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+              </div>
+            ) : (
+              <span className={`
+                text-white transform transition-all duration-300
+                ${isCurrentTrack && isPlaying
+                  ? 'scale-100 opacity-100'
+                  : 'scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100'
+                }
+              `}>
+                ▶
+              </span>
+            )}
           </div>
         </div>
 
         {/* Track Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-base md:text-lg text-surface-50 truncate group-hover:text-primary-400 transition-colors duration-300">
+          <h3 className={`font-medium text-base md:text-lg text-surface-50 truncate group-hover:text-primary-400 transition-colors duration-300 ${
+            isCurrentTrack && isPlaying ? 'text-beat-glow' : ''
+          }`}>
             {title}
           </h3>
           <div className="flex flex-col space-y-0.5 md:space-y-1">
@@ -138,8 +150,8 @@ export default function TrackCard({ id, title, artist, coverArt = '/images/dw.pn
               relative overflow-hidden rounded-full px-3 md:px-6 py-1.5 md:py-2 text-sm md:text-base
               transition-all duration-300 transform hover:scale-105
               ${isCurrentTrack 
-                ? 'bg-gradient-neon text-white shadow-neon' 
-                : 'bg-surface-800 text-surface-300 hover:text-white hover:shadow-neon'
+                ? 'btn-ocean text-white music-pulse beat-responsive' 
+                : 'bg-surface-800 text-surface-300 hover:text-white hover:shadow-ocean-glow'
               }
             `}
             aria-label={isCurrentTrack && isPlaying ? `Now playing: ${title}` : `Play ${title}`}
@@ -184,7 +196,7 @@ export default function TrackCard({ id, title, artist, coverArt = '/images/dw.pn
           tabIndex={0}
         >
           <div 
-            className="h-full bg-gradient-neon transition-all duration-200" 
+            className="h-full bg-gradient-ocean transition-all duration-200 shimmer-effect energy-flow beat-glow" 
             style={{ 
               width: `${playbackDuration > 0 ? (currentTime / playbackDuration) * 100 : 0}%` 
             }}

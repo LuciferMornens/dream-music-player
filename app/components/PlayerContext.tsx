@@ -6,6 +6,8 @@ import { useVolume } from '../hooks/useVolume';
 import { useNotifications } from '../hooks/useNotifications';
 import { useDeleteConfirmation } from '../hooks/useDeleteConfirmation';
 import { useTracks } from '../hooks/useTracks';
+import { useAudioAnalyzer, AudioAnalysisData } from '../hooks/useAudioAnalyzer';
+import { useBeatSync, BeatSyncData } from '../hooks/useBeatSync';
 
 interface PlayerContextType {
   // Track management
@@ -40,6 +42,11 @@ interface PlayerContextType {
   showDeleteConfirmation: (track: Track) => void;
   handleDeleteConfirm: () => void;
   handleDeleteCancel: () => void;
+  
+  // Beat detection and audio analysis
+  audioAnalysisData: AudioAnalysisData;
+  beatSyncData: BeatSyncData;
+  isAudioAnalyzing: boolean;
 }
 
 // Initialize with proper default values instead of empty object
@@ -66,7 +73,45 @@ const defaultContext: PlayerContextType = {
   deleteConfirmation: null,
   showDeleteConfirmation: () => {},
   handleDeleteConfirm: () => {},
-  handleDeleteCancel: () => {}
+  handleDeleteCancel: () => {},
+  audioAnalysisData: {
+    bass: 0,
+    mid: 0,
+    treble: 0,
+    beatStrength: 0,
+    isBeat: false,
+    beatTempo: 0,
+    frequencyData: new Uint8Array(0),
+    waveformData: new Uint8Array(0),
+    volume: 0,
+    energy: 0
+  },
+  beatSyncData: {
+    bassIntensity: 0,
+    midIntensity: 0,
+    trebleIntensity: 0,
+    beatPulse: 0,
+    beatScale: 1,
+    beatGlow: 0,
+    energyLevel: 0,
+    volumeLevel: 0,
+    tempoMultiplier: 1,
+    isHighEnergy: false,
+    bassBoost: 0,
+    trebleSparkle: 0,
+    midMotion: 0,
+    cssVars: {
+      '--beat-intensity': '0',
+      '--bass-level': '0',
+      '--mid-level': '0',
+      '--treble-level': '0',
+      '--energy-level': '0',
+      '--beat-scale': '1',
+      '--beat-glow': '0',
+      '--tempo-speed': '1s'
+    }
+  },
+  isAudioAnalyzing: false
 };
 
 export const PlayerContext = createContext<PlayerContextType>(defaultContext);
@@ -77,9 +122,10 @@ interface PlayerContextProviderProps {
 
 export default function PlayerContextProvider({ children }: PlayerContextProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
   // Initialize hooks in consistent order  
-  const { tracks, setTracks, deleteTrack, loading: tracksLoading, error: tracksError } = useTracks();
+  const { tracks, setTracks, deleteTrack } = useTracks();
   const { showToast, toastMessage, showNotification } = useNotifications();
   const volumeControls = useVolume();
   
@@ -98,8 +144,28 @@ export default function PlayerContextProvider({ children }: PlayerContextProvide
     onAudioElement: (element) => {
       if (element) {
         volumeControls.setAudioElement(element);
+        setAudioElement(element);
       }
     }
+  });
+
+  // Audio analysis and beat detection hooks
+  const { analysisData, isAnalyzing } = useAudioAnalyzer(audioElement, {
+    enabled: true,
+    fftSize: 2048,
+    smoothingTimeConstant: 0.8,
+    beatThreshold: 1.3,
+    beatDecayRate: 0.95
+  });
+
+  const beatSyncData = useBeatSync(analysisData, isPlaying, {
+    enabled: true,
+    sensitivity: 1.0,
+    smoothing: 0.85,
+    beatDecay: 0.92,
+    energyBoost: 1.2,
+    bassBoost: 1.5,
+    trebleBoost: 1.3
   });
 
   const { 
@@ -119,6 +185,16 @@ export default function PlayerContextProvider({ children }: PlayerContextProvide
       }
     }
   });
+
+  // Apply beat sync CSS variables to document root
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      Object.entries(beatSyncData.cssVars).forEach(([property, value]) => {
+        root.style.setProperty(property, value);
+      });
+    }
+  }, [beatSyncData.cssVars]);
 
   // Ensure all hooks are initialized before rendering children
   useEffect(() => {
@@ -154,7 +230,10 @@ export default function PlayerContextProvider({ children }: PlayerContextProvide
     deleteConfirmation,
     showDeleteConfirmation,
     handleDeleteConfirm: confirmDelete,
-    handleDeleteCancel
+    handleDeleteCancel,
+    audioAnalysisData: analysisData,
+    beatSyncData,
+    isAudioAnalyzing: isAnalyzing
   };
 
   return (

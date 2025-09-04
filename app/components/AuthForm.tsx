@@ -40,6 +40,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         router.push('/');
       }
     } catch (err) {
+      console.error('Authentication error:', err);
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
@@ -49,28 +50,53 @@ export function AuthForm({ mode }: AuthFormProps) {
   const isLogin = mode === 'login';
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-abyss relative overflow-hidden">
+      {/* Background Music Vibe Effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-1/2 h-1/2 bg-primary-500/5 rounded-full blur-3xl bass-thump" />
+        <div className="absolute bottom-1/4 right-1/4 w-1/3 h-1/3 bg-accent-500/8 rounded-full blur-2xl beat-bounce" />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-primary-400/3 rounded-full blur-3xl music-pulse" />
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-black/20 backdrop-blur-lg rounded-3xl p-8 w-full max-w-md shadow-2xl border border-purple-500/20"
+        className="glass-elegant rounded-3xl p-8 w-full max-w-md ocean-border relative z-10"
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <motion.h1
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent mb-2"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 120 }}
+            className="mb-4 flex items-center justify-center"
           >
-            Dream Music
-          </motion.h1>
+            {/* Music Logo with Frequency Bars */}
+            <div className="flex items-center space-x-3">
+              <div className="frequency-bars">
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+              </div>
+              <h1 className="text-4xl font-bold elegant-text music-pulse">
+                Dream Music
+              </h1>
+              <div className="frequency-bars">
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+                <div className="bar"></div>
+              </div>
+            </div>
+          </motion.div>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-gray-300"
+            className="text-surface-300 treasure-text"
           >
             {isLogin ? 'Welcome back' : 'Join the community'}
           </motion.p>
@@ -84,7 +110,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-surface-300 mb-2">
               Email
             </label>
             <input
@@ -93,7 +119,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl glass border border-primary-500/30 text-white placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:shadow-ocean-glow transition-all"
               placeholder="Enter your email"
             />
           </motion.div>
@@ -104,7 +130,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-surface-300 mb-2">
               Password
             </label>
             <input
@@ -114,7 +140,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+              className="w-full px-4 py-3 rounded-xl glass border border-primary-500/30 text-white placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:shadow-ocean-glow transition-all"
               placeholder="Enter your password"
             />
           </motion.div>
@@ -127,7 +153,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 }}
               >
-                <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-surface-300 mb-2">
                   Username
                 </label>
                 <input
@@ -135,7 +161,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+                  className="w-full px-4 py-3 rounded-xl glass border border-primary-500/30 text-white placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:shadow-ocean-glow transition-all"
                   placeholder="Choose a username"
                 />
               </motion.div>
@@ -145,7 +171,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 }}
               >
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-2">
+                <label htmlFor="fullName" className="block text-sm font-medium text-surface-300 mb-2">
                   Full Name
                 </label>
                 <input
@@ -153,7 +179,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 backdrop-blur-sm border border-gray-600/50 text-white placeholder-gray-400 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all"
+                  className="w-full px-4 py-3 rounded-xl glass border border-primary-500/30 text-white placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-400/20 focus:shadow-ocean-glow transition-all"
                   placeholder="Enter your full name"
                 />
               </motion.div>
@@ -165,7 +191,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-red-500/20 border border-red-500/50 rounded-xl p-3 text-red-300 text-sm"
+              className="glass border border-red-400/50 rounded-xl p-3 text-red-300 text-sm sound-ripple"
             >
               {error}
             </motion.div>
@@ -180,7 +206,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-purple-500/25 hover:shadow-xl"
+            className="btn-ocean w-full py-3 px-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed bass-thump"
           >
             {loading ? (
               <div className="flex items-center justify-center">
@@ -199,12 +225,12 @@ export function AuthForm({ mode }: AuthFormProps) {
             transition={{ delay: isLogin ? 0.7 : 0.9 }}
             className="text-center"
           >
-            <p className="text-gray-400">
+            <p className="text-surface-400">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button
                 type="button"
                 onClick={() => router.push(isLogin ? '/auth/signup' : '/auth/login')}
-                className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
+                className="ocean-text hover:text-primary-300 font-medium transition-colors music-pulse"
               >
                 {isLogin ? 'Sign up' : 'Sign in'}
               </button>

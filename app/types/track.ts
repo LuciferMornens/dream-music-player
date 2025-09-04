@@ -1,3 +1,5 @@
+import type { Database } from '@/types/database';
+
 // Legacy track interface for compatibility
 export interface LegacyTrack {
   id: string;
@@ -23,14 +25,20 @@ export interface Track {
   file_path?: string;
   file_size?: number;
   upload_date?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 // Helper function to convert Supabase track to frontend Track
-export function formatSupabaseTrack(supabaseTrack: any): Track {
-  const durationMinutes = supabaseTrack.duration ? Math.floor(supabaseTrack.duration / 60) : 0;
-  const durationSeconds = supabaseTrack.duration ? supabaseTrack.duration % 60 : 0;
+export function formatSupabaseTrack(supabaseTrack: Database['public']['Tables']['tracks']['Row']): Track {
+  const duration = Number(supabaseTrack.duration) || 0;
+  const durationMinutes = Math.floor(duration / 60);
+  const durationSeconds = duration % 60;
   const formattedDuration = `${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+
+  const meta: Record<string, unknown> =
+    typeof supabaseTrack.metadata === 'object' && supabaseTrack.metadata !== null
+      ? (supabaseTrack.metadata as Record<string, unknown>)
+      : {};
 
   return {
     id: supabaseTrack.id,
@@ -40,16 +48,16 @@ export function formatSupabaseTrack(supabaseTrack: any): Track {
     coverArt: supabaseTrack.cover_art || '/images/dw.png',
     genre: supabaseTrack.genre || 'Uncategorized',
     duration: formattedDuration,
-    user_id: supabaseTrack.user_id,
+    user_id: supabaseTrack.user_id ?? undefined,
     file_path: supabaseTrack.file_path,
     file_size: supabaseTrack.file_size,
-    upload_date: supabaseTrack.upload_date,
-    metadata: supabaseTrack.metadata
+    upload_date: supabaseTrack.upload_date ?? undefined,
+    metadata: meta
   };
 }
 
 // Helper function to convert frontend track to Supabase format
-export function formatTrackForSupabase(track: Track, userId: string, filePath: string): any {
+export function formatTrackForSupabase(track: Track, userId: string, filePath: string): Record<string, unknown> {
   const [minutes, seconds] = (track.duration || '0:00').split(':').map(Number);
   const totalSeconds = (minutes * 60) + seconds;
 

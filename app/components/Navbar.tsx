@@ -16,7 +16,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="h-full">
+    <nav className="h-full navbar-beat">
       {/* Animated background gradient */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-primary-900/20 via-accent-900/20 to-primary-900/20 animate-pulse opacity-50" />
@@ -28,9 +28,9 @@ export default function Navbar() {
             href="/"
             className="text-xl md:text-2xl font-bold relative group"
           >
-            <span className="cosmic-text animate-glow">Dream Music</span>
+            <span className="elegant-text treasure-glow text-beat-glow tempo-pulse">Dream Music</span>
             {/* Hover effect line */}
-            <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-neon group-hover:w-full transition-all duration-300" />
+            <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-ocean group-hover:w-full transition-all duration-300" />
           </Link>
           
           <div className="flex items-center space-x-4 md:space-x-8">
@@ -46,12 +46,12 @@ export default function Navbar() {
                 </span>
                 {/* Animated background effect */}
                 <div className={`
-                  absolute inset-0 bg-gradient-neon opacity-0 group-hover:opacity-10 
+                  absolute inset-0 bg-gradient-coral opacity-0 group-hover:opacity-15 
                   transition-opacity duration-300
                 `} />
                 {/* Bottom line effect */}
                 <div className={`
-                  absolute bottom-0 left-0 h-0.5 bg-gradient-neon
+                  absolute bottom-0 left-0 h-0.5 bg-gradient-ocean
                   transition-all duration-300 ease-out
                   ${pathname === '/' ? 'w-full' : 'w-0 group-hover:w-full'}
                 `} />
@@ -65,7 +65,7 @@ export default function Navbar() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center space-x-2 text-sm text-surface-300 hover:text-primary-400 transition-colors duration-300 bg-surface-800/50 rounded-full px-3 py-2 backdrop-blur-sm border border-surface-700 hover:border-primary-500/50"
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-gradient-coral flex items-center justify-center music-pulse beat-responsive beat-glow">
                     <span className="text-white text-xs font-bold">
                       {(profile?.username || user.email || 'U').charAt(0).toUpperCase()}
                     </span>
@@ -128,7 +128,7 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="text-sm font-medium px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 transition-all duration-300 shadow-lg hover:shadow-primary-500/25"
+                    className="btn-ocean text-sm font-medium px-4 py-2 rounded-lg"
                   >
                     Sign Up
                   </Link>

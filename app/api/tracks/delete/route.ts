@@ -1,16 +1,12 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
 import { deleteAudioFile } from '@/lib/supabase/storage';
 import { deleteRequestSchema, formatZodError } from '../../../lib/validations';
+import { createServerClient } from '@/lib/supabase/server';
 
 export async function DELETE(request: Request) {
     try {
-        const cookieStore = cookies();
-        const supabase = createRouteHandlerClient<Database>({ 
-            cookies: () => cookieStore 
-        });
+        const supabase = await createServerClient();
 
         // Get the authenticated user
         const {
@@ -53,14 +49,17 @@ export async function DELETE(request: Request) {
             );
         }
 
+        // Type assertion for track
+        const trackData = track as Database['public']['Tables']['tracks']['Row'];
+
         // Delete the audio file from Supabase Storage
-        const storageDeleted = await deleteAudioFile(track.file_path);
+        const storageDeleted = await deleteAudioFile(trackData.file_path);
         if (!storageDeleted) {
             console.warn({
                 operation: 'delete_track',
                 warning: 'storage_delete_failed',
                 trackId,
-                filePath: track.file_path
+                filePath: trackData.file_path
             });
         }
 
