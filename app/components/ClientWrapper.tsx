@@ -1,5 +1,6 @@
 'use client';
 import { ReactNode, useLayoutEffect, useState } from 'react';
+import { AuthProvider } from '@/hooks/useAuth';
 import PlayerContextProvider from './PlayerContext';
 import MainLayout from './layouts/MainLayout';
 
@@ -15,10 +16,12 @@ export default function ClientWrapper({ children }: { children: ReactNode }) {
   }
 
   return (
-    <PlayerContextProvider>
-      <MainLayout>
-        {children}
-      </MainLayout>
-    </PlayerContextProvider>
+    <AuthProvider>
+      <PlayerContextProvider>
+        <MainLayout>
+          {children}
+        </MainLayout>
+      </PlayerContextProvider>
+    </AuthProvider>
   );
 }

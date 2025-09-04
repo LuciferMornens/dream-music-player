@@ -78,8 +78,8 @@ interface PlayerContextProviderProps {
 export default function PlayerContextProvider({ children }: PlayerContextProviderProps) {
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize hooks in consistent order
-  const { tracks, setTracks, deleteTrack } = useTracks();
+  // Initialize hooks in consistent order  
+  const { tracks, setTracks, deleteTrack, loading: tracksLoading, error: tracksError } = useTracks();
   const { showToast, toastMessage, showNotification } = useNotifications();
   const volumeControls = useVolume();
   

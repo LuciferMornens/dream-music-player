@@ -5,11 +5,15 @@ import TrackCard from './components/TrackCard';
 import { PlayerContext } from './components/PlayerContext';
 import PageTransition from './components/PageTransition';
 import UploadTrack from './components/UploadTrack';
+import { useAuth } from './hooks/useAuth';
+import { useTracks } from './hooks/useTracks';
 
 export default function HomePage() {
   const context = useContext(PlayerContext);
-  const { playTrack, showNotification, tracks, setTracks } = context;
-  const [isLoading, setIsLoading] = useState(true);
+  const { playTrack, showNotification } = context;
+  const { user, loading: authLoading } = useAuth();
+  const { tracks, loading: tracksLoading, error: tracksError, addTracks } = useTracks();
+  
   const [genres, setGenres] = useState<string[]>(['All']);
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -29,50 +33,47 @@ export default function HomePage() {
     }
   }, [tracks]);
 
+  // Show error notification if tracks fail to load
+  useEffect(() => {
+    if (tracksError) {
+      showNotification(`Failed to load tracks: ${tracksError}`);
+    }
+  }, [tracksError, showNotification]);
+
   // Filter tracks based on selected genre
   const filteredTracks = tracks.filter(track =>
     selectedGenre === 'All' || track.genre === selectedGenre
   );
 
-  // Load initial tracks
-  useEffect(() => {
-    let mounted = true;
-
-    const loadTracks = async () => {
-      if (!mounted || !isInitialized) return;
-      
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/tracks');
-        if (!response.ok) throw new Error('Failed to load tracks');
-        const data = await response.json();
-        if (mounted) {
-          setTracks(data.tracks);
-        }
-      } catch (error) {
-        console.error('Error loading tracks:', error);
-        if (mounted) {
-          showNotification('Failed to load tracks');
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    if (isInitialized) {
-      loadTracks();
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [setTracks, showNotification, isInitialized]);
+  const isLoading = authLoading || tracksLoading || !isInitialized;
 
   // Don't render anything until context is initialized
   if (!isInitialized) {
     return null;
+  }
+
+  // Show loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-surface-400">Loading your music library...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect will be handled by middleware, but show a message just in case
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-surface-400 mb-4">Please sign in to access your music library.</p>
+          <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto" />
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -97,7 +98,7 @@ export default function HomePage() {
           {/* Enhanced Hero Section */}
           <div className="text-center py-12 md:py-16 animate-fade-in-up">
             <UploadTrack onUploadComplete={(newTracks) => {
-              setTracks(newTracks);
+              addTracks(newTracks);
               if (newTracks.length > 0) {
                 showNotification('Library updated with new tracks!');
               }
