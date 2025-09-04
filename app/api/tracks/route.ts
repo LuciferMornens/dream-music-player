@@ -1,43 +1,60 @@
-import { readFile } from 'fs/promises';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { tracksDataSchema, formatZodError } from '../../lib/validations';
+import { cookies } from 'next/headers';
+import type { Database } from '@/types/database';
+import { formatSupabaseTrack } from '@/types/track';
 
 export async function GET() {
   try {
-    const tracksPath = path.join(process.cwd(), 'app', 'data', 'tracks.json');
-    const tracksData = await readFile(tracksPath, 'utf-8');
-    const tracks = JSON.parse(tracksData);
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient<Database>({ 
+      cookies: () => cookieStore 
+    });
 
-    // Validate the tracks data structure
-    const validationResult = tracksDataSchema.safeParse(tracks);
-    if (!validationResult.success) {
-      console.error({
-        operation: 'get_tracks',
-        error: 'invalid_tracks_data',
-        details: validationResult.error
-      });
+    // Get the authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
       return NextResponse.json(
-        formatZodError(validationResult.error),
-        { status: 400 }
+        { error: 'Unauthorized' },
+        { status: 401 }
       );
     }
 
-    return NextResponse.json(validationResult.data);
+    // Fetch tracks for the authenticated user
+    const { data: tracks, error } = await supabase
+      .from('tracks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('upload_date', { ascending: false });
+
+    if (error) {
+      console.error({
+        operation: 'get_tracks',
+        error: 'supabase_error',
+        details: error
+      });
+      return NextResponse.json(
+        { error: 'Failed to fetch tracks' },
+        { status: 500 }
+      );
+    }
+
+    // Format tracks for frontend compatibility
+    const formattedTracks = tracks.map(formatSupabaseTrack);
+
+    return NextResponse.json({ tracks: formattedTracks });
   } catch (error) {
     const errorDetails = {
       operation: 'get_tracks',
-      error: error instanceof SyntaxError ? 'invalid_json' : 'unhandled_error',
+      error: 'unhandled_error',
       details: error instanceof Error ? error.message : 'Unknown error'
     };
     console.error(errorDetails);
 
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { error: 'Invalid JSON format in tracks data' },
-        { status: 500 }
-      );
-    }
     return NextResponse.json(
       { error: 'Failed to load tracks', details: errorDetails.details },
       { status: 500 }

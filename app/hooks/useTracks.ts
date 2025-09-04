@@ -1,29 +1,91 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Track } from '../types/track';
+import { supabase } from '@/lib/supabase/client';
+import { useAuth } from './useAuth';
+import { Track, formatSupabaseTrack } from '../types/track';
 
 interface UseTracksOptions {
   onTrackDeleted?: (track: Track) => void;
 }
 
 export function useTracks({ onTrackDeleted }: UseTracksOptions = {}) {
-  const [tracks, setTracks] = useState<Track[]>(() => {
-    // Try to get initial tracks from localStorage to prevent flash
-    try {
-      const cached = localStorage.getItem('tracks');
-      return cached ? JSON.parse(cached) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
-  // Cache tracks in localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('tracks', JSON.stringify(tracks));
-    } catch {
-      // Ignore storage errors
+  // Fetch tracks from API
+  const fetchTracks = useCallback(async () => {
+    if (!user) {
+      setTracks([]);
+      setLoading(false);
+      return;
     }
-  }, [tracks]);
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/tracks');
+      if (!response.ok) {
+        if (response.status === 401) {
+          setTracks([]);
+          return;
+        }
+        throw new Error('Failed to fetch tracks');
+      }
+
+      const data = await response.json();
+      setTracks(data.tracks || []);
+    } catch (error) {
+      console.error('Error fetching tracks:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+      setTracks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Load tracks when user changes
+  useEffect(() => {
+    fetchTracks();
+  }, [fetchTracks]);
+
+  // Set up real-time subscription for tracks
+  useEffect(() => {
+    if (!user) return;
+
+    const subscription = supabase
+      .channel('tracks_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tracks',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Track change detected:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            const newTrack = formatSupabaseTrack(payload.new);
+            setTracks(prevTracks => [newTrack, ...prevTracks]);
+          } else if (payload.eventType === 'DELETE') {
+            setTracks(prevTracks => prevTracks.filter(t => t.id !== payload.old.id));
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedTrack = formatSupabaseTrack(payload.new);
+            setTracks(prevTracks =>
+              prevTracks.map(t => (t.id === updatedTrack.id ? updatedTrack : t))
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
 
   const deleteTrack = useCallback(async (track: Track) => {
     try {
@@ -56,14 +118,21 @@ export function useTracks({ onTrackDeleted }: UseTracksOptions = {}) {
       const uniqueNewTracks = newTracks.filter(
         newTrack => !prevTracks.some(existingTrack => existingTrack.id === newTrack.id)
       );
-      return [...prevTracks, ...uniqueNewTracks];
+      return [...uniqueNewTracks, ...prevTracks];
     });
   }, []);
 
+  const refreshTracks = useCallback(() => {
+    fetchTracks();
+  }, [fetchTracks]);
+
   return {
     tracks,
+    loading,
+    error,
     setTracks,
     deleteTrack,
-    addTracks
+    addTracks,
+    refreshTracks
   };
 }
