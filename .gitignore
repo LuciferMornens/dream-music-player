@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 .aider*
 .env
+
+# Claude Code configuration
+.claude/
+.mcp.json
